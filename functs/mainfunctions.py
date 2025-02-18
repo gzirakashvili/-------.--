@@ -1,17 +1,23 @@
 import cloudscraper
-import random,string,json,hashlib
+import random,string,json,hashlib,sys
 from requests_toolbelt import MultipartEncoder
 from bs4 import BeautifulSoup
 scraper = cloudscraper.create_scraper(disableCloudflareV1=True)
 
-cookies = {
-    'selected_language': 'Georgian',
-    'dle_user_id': '285',
-    'dle_password': '88d6db501926809b65666c8fc392290c',
-    'dle_compl': '46',
-    'dle_newpm': '0',
-    'PHPSESSID': '91ntk8brmc2bit59g183p8o0qt',
+# This snippet is a part of my mainfunctions.py file. It is used to upload movie covers and posters to the website.
+# It is used in mykadri.py to upload movie covers and posters to the website.
+# The code is used to upload movie covers and posters to the website.
+# The code is used to upload movie covers and posters to the website.
+
+# აქ არის მითითებული მონაცემები შეცვალეთ მხოლოდ იუზერნეიმი და პაროლი სურვილის შემთხვევაში
+data = {
+    'subaction': 'dologin',
+    'username': 'nika',
+    'password': 'zdzdzdzd',
+    'selected_language': 'Georgian'
 }
+
+
 headers = {
     'accept': '*/*',
     'accept-language': 'en-US,en;q=0.9,ka;q=0.8,ka-GE;q=0.7',
@@ -30,6 +36,37 @@ headers = {
     'x-requested-with': 'XMLHttpRequest',
 }
 
+headers = {
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept-language': 'en-US,en;q=0.9,ka;q=0.8,ka-GE;q=0.7',
+    'cache-control': 'max-age=0',
+    'content-type': 'application/x-www-form-urlencoded',
+    'origin': 'https://kinoebi.in',
+    'priority': 'u=0, i',
+    'referer': 'https://kinoebi.in/admin.php?mod=main',
+    'sec-ch-ua': '"Not(A:Brand";v="99", "Google Chrome";v="133", "Chromium";v="133"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+    # 'cookie': 'selected_language=Georgian; PHPSESSID=b70e4997bppjjveortee1utbs1; dle_user_id=285; dle_password=b0c2e462c934c37b7138ae2dbd42f771; dle_compl=46',
+}
+
+params = {
+    'mod': 'main',
+}
+
+response = scraper.post('https://kinoebi.in/admin.php', params=params, headers=headers, data=data)
+if response.status_code == 200:
+    cookies = response.cookies.get_dict()
+    hash = response.text.split("//-->")[0].split('<!--')[1].split('dle_login_hash')[1].replace('=', '').replace('"', '').replace("'", '').replace(' ', '').replace('\n', '').replace(';', '')
+else:
+    sys.exit("შეცდომა ავტორიზაციისას")
+    
 def upload_cover(name,img):
 
     files = {
@@ -41,7 +78,7 @@ def upload_cover(name,img):
         'area': (None, 'xfieldsimage'),
         'author': (None, 'Nika'),
         'xfname': (None, 'cover'),
-        'user_hash': (None, 'c94b13cddf53151453c5ea933889da8d254537e6'),
+        'user_hash': (None, hash),
         'qqfile': (name, img, 'image/jpg'),
     }
     boundary = '----WebKitFormBoundary' \
@@ -83,7 +120,7 @@ def upload_poster(name, img):
         'area': (None, 'xfieldsimage'),
         'author': (None, 'Nika'),
         'xfname': (None, 'poster'),
-        'user_hash': (None, 'c94b13cddf53151453c5ea933889da8d254537e6'),
+        'user_hash': (None, hash),
         'qqfile': (name, img, 'image/jpg'),
     }
     boundary = '----WebKitFormBoundary' \
@@ -120,7 +157,7 @@ def check_movie(name):
 
     data = {
         'title': name,
-        'user_hash': 'c94b13cddf53151453c5ea933889da8d254537e6',
+        'user_hash': hash,
     }
 
     response = scraper.post('https://kinoebi.in/engine/ajax/controller.php', params=params, cookies=cookies, headers=headers, data=data)
@@ -199,7 +236,7 @@ def post(genre_arr,genre_id,desc,trailer_iframe,meta_search_querys,name_GEO,name
         'mod': 'addnews',
         'action': 'doaddnews',
         'duplicateprotection': hashlib.md5(str(name_GEO).encode('utf-8')),
-        'user_hash': 'c94b13cddf53151453c5ea933889da8d254537e6',
+        'user_hash': hash,
     }
 
     response = scraper.post('https://kinoebi.in/admin.php', params=params, cookies=cookies, headers=headers, data=data)
